@@ -114,7 +114,6 @@ function M.ftplugin(path, ext)
 end
 
 function M.source(path)
-    print("sourcing ", path)
     local ext = path:match("[^/.]%.(.-)$")
     local ok, result = pcall(compilers[ext], path)
     if ok then
