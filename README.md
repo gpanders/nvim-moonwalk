@@ -21,7 +21,7 @@ end)
 
 Open Neovim and run `:lua require("hello")`.
 
-**after/plugin/lua.fnl**:
+**after/ftplugin/lua.fnl**:
 
 ```fennel
 (set vim.bo.expandtab true)
