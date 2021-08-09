@@ -25,33 +25,29 @@ local log = (function()
     end
 end)()
 
-local compilers = {}
-
 -- TODO: Rewrite this when autocommands are supported natively in Lua
 local function setup_autocmds(ext)
-    vim.api.nvim_command("augroup moonwalk_" .. ext)
-    vim.api.nvim_command(
-        string.format("autocmd! SourceCmd *.%s call v:lua.moonwalk.source(expand('<amatch>:p'))", ext)
-    )
-
-    if vim.v.vim_did_enter then
-        vim.api.nvim_command(string.format("runtime! plugin/**/*.%s", ext))
-    else
-        vim.api.nvim_command(string.format("autocmd! VimEnter * ++nested runtime! plugin/**/*.%s", ext))
-    end
-
-    vim.api.nvim_command(
-        string.format("autocmd! FileType * ++nested call v:lua.moonwalk.ftplugin(expand('<amatch>'), '%s')", ext)
-    )
-
-    vim.api.nvim_command("augroup END")
+    vim.cmd(string.format(
+        [[
+augroup moonwalk_%s
+    autocmd SourceCmd *.%s lua require("moonwalk").source(vim.fn.expand("<amatch>:p"))
+    autocmd FileType * ++nested lua require("moonwalk").ftplugin(vim.fn.expand("<amatch>"), "%s")
+augroup END]],
+        ext,
+        ext,
+        ext,
+        ext,
+        ext
+    ))
 end
 
 local M = {}
 
+M.compilers = {}
+
 function M.add_loader(ext, compile, opts)
-    compilers[ext] = function(path)
-        local luapath = cachedir .. "/moonwalk/" .. path:gsub("%." .. ext .. "$", ".lua")
+    M.compilers[ext] = function(path)
+        local luapath = cachedir .. "/moonwalk" .. path:gsub("%." .. ext .. "$", ".lua")
         local s = vim.loop.fs_stat(luapath)
         if not s or vim.loop.fs_stat(path).mtime.sec > s.mtime.sec then
             local src = assert(io.open(path, "r"))
@@ -83,7 +79,7 @@ function M.add_loader(ext, compile, opts)
         for _, path in ipairs(paths) do
             local found = vim.api.nvim_get_runtime_file(path, false)
             if #found > 0 then
-                local luafile = compilers[ext](found[1])
+                local luafile = M.compilers[ext](found[1])
                 local f, err = loadfile(luafile)
                 return f or error(err)
             end
@@ -115,14 +111,12 @@ end
 
 function M.source(path)
     local ext = path:match("[^/.]%.(.-)$")
-    local ok, result = pcall(compilers[ext], path)
+    local ok, result = pcall(M.compilers[ext], path)
     if ok then
         vim.api.nvim_command("source " .. result)
     else
         vim.notify(result, vim.log.levels.ERROR)
     end
 end
-
-_G.moonwalk = M
 
 return M
