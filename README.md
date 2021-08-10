@@ -41,6 +41,11 @@ This means that the cost of compilation is only paid once: future invocations
 will used the already compiled Lua function and will execute as fast as native
 Lua.
 
+moonwalk intercepts `:source` and `:runtime` commands for files with the
+extensions you provide. This allows you to use any language anywhere you can
+use a .vim or .lua file (with a couple of exceptions, see [caveats](#caveats))
+such as `plugin` or `ftplugin` files.
+
 ## Configuration
 
 The only requirement is a function that can transform a string of the source
@@ -65,8 +70,9 @@ configure how Neovim works with C files by creating
 (set vim.bo.shiftwidth 8)
 ```
 
-So long as you can define a function that transforms the source into Lua, you
-can use any source language you want, including custom DSLs!
+The examples above use Fennel, but o long as you can define a function that
+transforms the source into Lua, you can use any source language you want,
+including custom DSLs!
 
 ### Options
 
@@ -99,6 +105,59 @@ the following keys:
 [wiki]: https://github.com/gpanders/nvim-moonwalk/wiki
 [stub]: https://git.sr.ht/~gpanders/dotfiles/tree/6ba3d5e54b1b3ce4c6e74165bf51d8c832a1dd6d/item/.config/nvim/colors/base16-eighties.vim
 [colors]: https://git.sr.ht/~gpanders/dotfiles/tree/6ba3d5e54b1b3ce4c6e74165bf51d8c832a1dd6d/item/.config/nvim/fnl/colors/base16-eighties.fnl
+
+## Examples
+
+See some examples from the author's dotfiles:
+
+* [Moonwalk configuration][config]
+* [Useful macros][macros]
+* ftplugins: [C][c ftplugin], [Fennel][fennel ftplugin]
+* [Asynchronous grep wrapper][grep] (and [commands][])
+
+[config]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/moonwalk.lua
+[macros]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/fnl/macros.fnl
+[c ftplugin]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/after/ftplugin/c.fnl
+[fennel ftplugin]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/after/ftplugin/fennel.fnl
+[grep]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/fnl/grep.fnl
+[commands]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/grep.vim
+
+## FAQ
+
+### Why is this useful?
+
+It's not, but it's fun.
+
+### What is the performance impact?
+
+Short answer: marginal
+
+Long answer:
+
+Compiling languages into Lua typically has a non-trivial performance impact,
+but this is only done once so you shouldn't worry about it. Once the source
+file is compiled it is cached until the source file changes again. Future
+invocations are (nearly) as fast as using Lua directly.
+
+It is only nearly as fast because the custom loader that moonwalk inserts is at
+the end of Lua's `package.loaders` table. This means that when you `require()`
+a module written in an extension language Lua has to iterate through the other
+package loaders first before it finally gets to moonwalk. However, this process
+takes on the order of microseconds, so don't sweat it too much.
+
+The other performance impact comes from searching for runtime files in the
+given extension language. On startup, moonwalk runs (essentially) the following
+command:
+
+```vim
+:runtime! plugin/**/*.{ext}
+```
+
+where `{ext}` is the provided extension (e.g. `moon` or `tl`). Searching
+through the runtime path recursively takes a few milliseconds, so if you are a
+startuptime junkie you may notice this. moonwalk takes measures to speed up
+this process as much as possible, but there is a ceiling on how fast this can
+be.
 
 ## Prior Art
 
