@@ -139,16 +139,24 @@ function M._load_plugins(after, only_after)
             end
         end
     end
+
     vim.o.runtimepath = table.concat(t, ",")
     vim.o.packpath = ""
+
+    local sources = {}
     for ext in pairs(compilers) do
         local found = vim.api.nvim_get_runtime_file("plugin/**/*." .. ext, true)
         for _, v in ipairs(found) do
-            M._source(v)
+            table.insert(sources, v)
         end
     end
+
     vim.o.runtimepath = rtp
     vim.o.packpath = pp
+
+    for _, v in ipairs(sources) do
+        M._source(v)
+    end
 end
 
 return M
