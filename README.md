@@ -112,11 +112,16 @@ See some examples from the author's dotfiles:
 
 * [Moonwalk configuration][config]
 * [Useful macros][macros]
+* Plugin configuration: [lspconfig][], [telescope][], [compe][], [nvim-lint][]
 * ftplugins: [C][c ftplugin], [Fennel][fennel ftplugin]
 * [Asynchronous grep wrapper][grep] (and [commands][])
 
 [config]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/moonwalk.lua
 [macros]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/fnl/macros.fnl
+[lspconfig]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/lspconfig.fnl
+[telescope]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/telescope.fnl
+[compe]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/compe.fnl
+[nvim-lint]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/lint.fnl
 [c ftplugin]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/after/ftplugin/c.fnl
 [fennel ftplugin]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/after/ftplugin/fennel.fnl
 [grep]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/fnl/grep.fnl
@@ -130,20 +135,22 @@ It's not, but it's fun.
 
 ### What is the performance impact?
 
-Short answer: marginal
+Short answer: marginal.
 
 Long answer:
 
-Compiling languages into Lua typically has a non-trivial performance impact,
-but this is only done once so you shouldn't worry about it. Once the source
-file is compiled it is cached until the source file changes again. Future
-invocations are (nearly) as fast as using Lua directly.
+Compiling languages into Lua takes a non-trivial amount of time, but this is
+only done once so you shouldn't worry about it. Once the source file is
+compiled it is cached until the source file changes again. Future invocations
+are (nearly) as fast as using Lua directly.
 
-It is only nearly as fast because the custom loader that moonwalk inserts is at
-the end of Lua's `package.loaders` table. This means that when you `require()`
-a module written in an extension language Lua has to iterate through the other
-package loaders first before it finally gets to moonwalk. However, this process
-takes on the order of microseconds, so don't sweat it too much.
+It is only *nearly* as fast because the custom loader that moonwalk inserts is
+at the end of Lua's `package.loaders` table. This means that when you
+`require()` a module written in an extension language Lua has to iterate
+through the other package loaders first before it finally gets to moonwalk.
+moonwalk also has to do a few things in order to determine whether or not the
+source file has changed such as checking file modification times. However, this
+process takes on the order of microseconds, so don't sweat it too much.
 
 The other performance impact comes from searching for runtime files in the
 given extension language. On startup, moonwalk runs (essentially) the following
@@ -153,18 +160,21 @@ command:
 :runtime! plugin/**/*.{ext}
 ```
 
-where `{ext}` is the provided extension (e.g. `moon` or `tl`). Searching
+where `{ext}` is the provided extension (e.g. `moon`, `tl`, etc.). Searching
 through the runtime path recursively takes a few milliseconds, so if you are a
 startuptime junkie you may notice this. moonwalk takes measures to speed up
 this process as much as possible, but there is a ceiling on how fast this can
-be.
+be done.
 
 ## Prior Art
 
 * moonwalk is heavily inspired by [hotpot.nvim][]. Hotpot works only with
   Fennel but provides far more features than moonwalk.
+* [aniseed][] is another plugin that provides Fennel support for Neovim, along
+  with an entire standard library and utility functions.
 
 [hotpot.nvim]: https://github.com/rktjmp/hotpot.nvim
+[aniseed]: https://github.com/Olical/aniseed
 
 ## Contributing
 
