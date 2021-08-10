@@ -178,6 +178,12 @@ be done.
 
 ## Contributing
 
+If you extend Neovim with an extension language other than Fennel, please let
+me know so I can include some of those entries in the [examples](#examples).
+
+The wiki is publicy editable. If you think you have a useful contribution,
+please share it!
+
 File issues in the [GitHub issue tracker][issues]. Changes can be sent as
 [`git-send-email`][git-send-email] patches to
 [~gpanders/public-inbox@lists.sr.ht][public-inbox] or as a GitHub pull request.
