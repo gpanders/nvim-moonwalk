@@ -30,11 +30,10 @@ local function setup_autocmds(ext)
     vim.cmd(string.format(
         [[
 augroup moonwalk_%s
-    autocmd SourceCmd *.%s lua require("moonwalk").source(vim.fn.expand("<amatch>:p"))
-    autocmd FileType * ++nested lua require("moonwalk").ftplugin(vim.fn.expand("<amatch>"), "%s")
+    autocmd!
+    autocmd SourceCmd *.%s lua require("moonwalk")._source()
+    autocmd FileType * ++nested lua require("moonwalk")._load_ftplugin('%s')
 augroup END]],
-        ext,
-        ext,
         ext,
         ext,
         ext
@@ -91,8 +90,9 @@ function M.add_loader(ext, compile, opts)
     setup_autocmds(ext)
 end
 
-function M.ftplugin(path, ext)
-    for name in vim.gsplit(path or "", ".", true) do
+function M._load_ftplugin(ext)
+    local s = vim.fn.expand("<amatch>")
+    for name in vim.gsplit(s or "", ".", true) do
         if name then
             vim.api.nvim_command(
                 string.format(
@@ -109,7 +109,12 @@ function M.ftplugin(path, ext)
     end
 end
 
-function M.source(path)
+function M._source()
+    local path = vim.fn.expand("<afile>")
+    if not path or path == "" then
+        return
+    end
+
     local ext = path:match("[^/.]%.(.-)$")
     local ok, result = pcall(M.compilers[ext], path)
     if ok then
