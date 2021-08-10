@@ -40,12 +40,12 @@ augroup END]],
     ))
 end
 
+local compilers = {}
+
 local M = {}
 
-M.compilers = {}
-
 function M.add_loader(ext, compile, opts)
-    M.compilers[ext] = function(path)
+    compilers[ext] = function(path)
         local luapath = cachedir .. "/moonwalk" .. path:gsub("%." .. ext .. "$", ".lua")
         local s = vim.loop.fs_stat(luapath)
         if not s or vim.loop.fs_stat(path).mtime.sec > s.mtime.sec then
@@ -78,7 +78,7 @@ function M.add_loader(ext, compile, opts)
         for _, path in ipairs(paths) do
             local found = vim.api.nvim_get_runtime_file(path, false)
             if #found > 0 then
-                local luafile = M.compilers[ext](found[1])
+                local luafile = compilers[ext](found[1])
                 local f, err = loadfile(luafile)
                 return f or error(err)
             end
@@ -88,6 +88,8 @@ function M.add_loader(ext, compile, opts)
     table.insert(package.loaders, loader)
 
     setup_autocmds(ext)
+
+    M._load_plugins(vim.v.vim_did_enter == 1, false)
 end
 
 function M._load_ftplugin(ext)
@@ -109,19 +111,44 @@ function M._load_ftplugin(ext)
     end
 end
 
-function M._source()
-    local path = vim.fn.expand("<afile>")
+function M._source(path)
+    path = path or vim.fn.expand("<afile>:p")
     if not path or path == "" then
         return
     end
 
     local ext = path:match("[^/.]%.(.-)$")
-    local ok, result = pcall(M.compilers[ext], path)
+    local ok, result = pcall(compilers[ext], path)
     if ok then
         vim.api.nvim_command("source " .. result)
     else
         vim.notify(result, vim.log.levels.ERROR)
     end
+end
+
+function M._load_plugins(after, only_after)
+    local rtp = vim.o.runtimepath
+    local pp = vim.o.packpath
+    local t = { vim.fn.stdpath("config"), vim.fn.stdpath("data") .. "/site" }
+    if after then
+        for i, v in ipairs(t) do
+            if only_after then
+                t[i] = v .. "/after"
+            else
+                table.insert(t, v .. "/after")
+            end
+        end
+    end
+    vim.o.runtimepath = table.concat(t, ",")
+    vim.o.packpath = ""
+    for ext in pairs(compilers) do
+        local found = vim.api.nvim_get_runtime_file("plugin/**/*." .. ext, true)
+        for _, v in ipairs(found) do
+            M._source(v)
+        end
+    end
+    vim.o.runtimepath = rtp
+    vim.o.packpath = pp
 end
 
 return M
