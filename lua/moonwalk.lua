@@ -32,7 +32,7 @@ local function setup_autocmds(ext)
 augroup moonwalk_%s
     autocmd!
     autocmd SourceCmd *.%s lua require("moonwalk")._source()
-    autocmd FileType * ++nested lua require("moonwalk")._load_ftplugin('%s')
+    autocmd FileType * ++nested lua require("moonwalk")._handle_filetype('%s')
 augroup END]],
         ext,
         ext,
@@ -92,13 +92,15 @@ function M.add_loader(ext, compile, opts)
     M._load_plugins(vim.v.vim_did_enter == 1, false)
 end
 
-function M._load_ftplugin(ext)
+function M._handle_filetype(ext)
     local s = vim.fn.expand("<amatch>")
     for name in vim.gsplit(s or "", ".", true) do
         if name then
             vim.api.nvim_command(
                 string.format(
-                    "runtime! ftplugin/%s.%s ftplugin/%s_*.%s ftplugin/%s/*.%s",
+                    "runtime! ftplugin/%s.%s ftplugin/%s_*.%s ftplugin/%s/*.%s indent/%s.%s",
+                    name,
+                    ext,
                     name,
                     ext,
                     name,
