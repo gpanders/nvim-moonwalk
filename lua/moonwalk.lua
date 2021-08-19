@@ -15,6 +15,8 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+local M = {}
+local loaders = {}
 local cachedir = vim.fn.stdpath("cache")
 
 local log = (function()
@@ -25,14 +27,18 @@ local log = (function()
     end
 end)()
 
+local function extension(path)
+    return path:match("[^/.]%.(.-)$")
+end
+
 -- TODO: Rewrite this when autocommands are supported natively in Lua
 local function setup_autocmds(ext)
     vim.cmd(string.format(
         [[
 augroup moonwalk_%s
     autocmd!
-    autocmd SourceCmd *.%s lua require("moonwalk")._source(vim.fn.expand('<amatch>:p'))
-    autocmd FileType * ++nested lua require("moonwalk")._handle_filetype('%s')
+    autocmd SourceCmd *.%s call v:lua.moonwalk.source(expand('<amatch>:p'))
+    autocmd FileType * ++nested call v:lua.moonwalk.handle_filetype('%s')
 augroup END]],
         ext,
         ext,
@@ -40,63 +46,82 @@ augroup END]],
     ))
 end
 
-local M = {}
+local function compile(path, func)
+    local ext = path:match("[^/.]%.(.-)$")
+    local luapath = cachedir .. "/moonwalk" .. path:gsub("%." .. ext .. "$", ".lua")
+    local s = vim.loop.fs_stat(luapath)
+    if not s or s.mtime.sec < vim.loop.fs_stat(path).mtime.sec then
+        local src = assert(io.open(path, "r"))
+        local input = src:read("*a")
+        src:close()
 
-M.compilers = {}
-
-function M.add_loader(ext, compile, opts)
-    M.compilers[ext] = function(path)
-        local luapath = cachedir .. "/moonwalk" .. path:gsub("%." .. ext .. "$", ".lua")
-        local s = vim.loop.fs_stat(luapath)
-        if not s or vim.loop.fs_stat(path).mtime.sec > s.mtime.sec then
-            local src = assert(io.open(path, "r"))
-            local input = src:read("*a")
-            src:close()
-
-            local ok, output = pcall(compile, input)
-            if not ok then
-                local msg = string.format("%s: %s", path, output)
-                log(msg)
-                error(msg, 0)
-            end
-
-            vim.fn.mkdir(luapath:match("(.+)/.-%.lua"), "p")
-
-            local dst = assert(io.open(luapath, "w"))
-            dst:write(output)
-            dst:close()
-            log(string.format("Compiled %s to %s", path, luapath))
+        local ok, output = pcall(func, input)
+        if not ok then
+            local msg = string.format("%s: %s", path, output)
+            log(msg)
+            error(msg, 0)
         end
-        return luapath
+
+        vim.fn.mkdir(luapath:match("(.+)/.-%.lua"), "p")
+
+        local dst = assert(io.open(luapath, "w"))
+        dst:write(output)
+        dst:close()
+        log(string.format("Compiled %s to %s", path, luapath))
     end
-
-    local function loader(name)
-        local basename = name:gsub("%.", "/")
-        opts = opts or {}
-        local dir = opts.dir or ext
-        local paths = { dir .. "/" .. basename .. "." .. ext, dir .. "/" .. basename .. "/init." .. ext }
-        for _, path in ipairs(paths) do
-            local found = vim.api.nvim_get_runtime_file(path, false)
-            if #found > 0 then
-                local luafile = M.compilers[ext](found[1])
-                local f, err = loadfile(luafile)
-                return f or error(err)
-            end
-        end
-    end
-
-    table.insert(package.loaders, loader)
-
-    setup_autocmds(ext)
-
-    M._runtime(string.format("plugin/**/*.%s", ext), vim.v.vim_did_enter == 1)
+    return luapath
 end
 
-function M._handle_filetype(ext)
+local function get_user_runtime_file(name, after, all)
+    local t = { vim.fn.stdpath("config"), vim.fn.stdpath("data") .. "/site" }
+    if after then
+        for i = 1, #t do
+            table.insert(t, t[i] .. "/after")
+        end
+    end
+
+    local rtp = vim.o.runtimepath
+    local pp = vim.o.packpath
+
+    vim.o.runtimepath = table.concat(t, ",")
+    vim.o.packpath = ""
+
+    local found = vim.api.nvim_get_runtime_file(name, all)
+
+    vim.o.runtimepath = rtp
+    vim.o.packpath = pp
+
+    return found
+end
+
+local function source(path)
+    if not path or path == "" then
+        return
+    end
+
+    local ext = extension(path)
+    local ok, result = pcall(compile, path, loaders[ext].func)
+    if ok then
+        vim.api.nvim_command("source " .. result)
+    else
+        vim.notify(result, vim.log.levels.ERROR)
+    end
+end
+
+local function load_after_plugins()
+    for ext in pairs(loaders) do
+        local plugins = get_user_runtime_file(string.format("after/plugin/**/*.%s", ext), false, true)
+        for _, v in pairs(plugins) do
+            source(v)
+        end
+    end
+end
+
+local function handle_filetype(ext)
     local s = vim.fn.expand("<amatch>")
     for name in vim.gsplit(s or "", ".", true) do
         if name then
-            M._runtime(
+            local files = get_user_runtime_file(
                 string.format(
                     "ftplugin/%s.%s ftplugin/%s_*.%s ftplugin/%s/*.%s indent/%s.%s",
                     name,
@@ -108,45 +133,48 @@ function M._handle_filetype(ext)
                     name,
                     ext
                 ),
+                true,
                 true
             )
+
+            for _, v in pairs(files) do
+                source(v)
+            end
         end
     end
 end
 
-function M._source(path)
-    if not path or path == "" then
-        return
-    end
+local function loader(name)
+    local basename = name:gsub("%.", "/")
 
-    local ext = path:match("[^/.]%.(.-)$")
-    local ok, result = pcall(M.compilers[ext], path)
-    if ok then
-        vim.api.nvim_command("source " .. result)
-    else
-        vim.notify(result, vim.log.levels.ERROR)
-    end
-end
-
-function M._runtime(path, after)
-    local rtp = vim.o.runtimepath
-    local pp = vim.o.packpath
-    local t = { vim.fn.stdpath("config"), vim.fn.stdpath("data") .. "/site" }
-    if after then
-        for i = 1, #t do
-            table.insert(t, t[i] .. "/after")
+    for ext, v in pairs(loaders) do
+        local opts = v.opts or {}
+        local dir = opts.dir or ext
+        local paths = { dir .. "/" .. basename .. "." .. ext, dir .. "/" .. basename .. "/init." .. ext }
+        local found = get_user_runtime_file(table.concat(paths, " "), true, false)
+        if #found > 0 then
+            local luapath = compile(found[1], loaders[ext].func)
+            local f, err = loadfile(luapath)
+            return f or error(err)
         end
     end
+end
 
-    vim.o.runtimepath = table.concat(t, ",")
-    vim.o.packpath = ""
-    local found = vim.api.nvim_get_runtime_file(path, true)
-    vim.o.runtimepath = rtp
-    vim.o.packpath = pp
+table.insert(package.loaders, loader)
 
-    for _, v in ipairs(found) do
-        M._source(v)
+function M.add_loader(ext, func, opts)
+    loaders[ext] = { func = func, opts = opts }
+    setup_autocmds(ext)
+    local plugins = get_user_runtime_file(string.format("plugin/**/*.%s", ext), vim.v.vim_did_enter == 1, true)
+    for _, v in pairs(plugins) do
+        source(v)
     end
 end
+
+_G.moonwalk = {
+    source = source,
+    handle_filetype = handle_filetype,
+    load_after_plugins = load_after_plugins,
+}
 
 return M
