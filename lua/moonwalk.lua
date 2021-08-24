@@ -41,7 +41,7 @@ local function compile(path)
       end
       input = close_handlers_7_auto(xpcall(_4_, (package.loaded.fennel or debug).traceback))
     end
-    local _5_, _6_ = pcall(func, input)
+    local _5_, _6_ = pcall(func, input, path)
     if ((_5_ == true) and (nil ~= _6_)) then
       local output = _6_
       vim.fn.mkdir(luapath:match("(.+)/.-%.lua"), "p")

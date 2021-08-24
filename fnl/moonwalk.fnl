@@ -44,7 +44,7 @@ augroup END"
     (when (or (not s) (< s.mtime.sec (. (vim.loop.fs_stat path) :mtime :sec)))
       (let [input (with-open [src (io.open path :r)]
                     (src:read "*a"))]
-        (match (pcall func input)
+        (match (pcall func input path)
           (true output)
             (do
               (vim.fn.mkdir (luapath:match "(.+)/.-%.lua") :p)
