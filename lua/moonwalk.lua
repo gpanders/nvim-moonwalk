@@ -55,11 +55,10 @@ local function compile(path, func)
         local input = src:read("*a")
         src:close()
 
-        local ok, output = pcall(func, input)
+        local ok, output = pcall(func, input, path)
         if not ok then
-            local msg = string.format("%s: %s", path, output)
-            log(msg)
-            error(msg, 0)
+            log(output)
+            error(output, 0)
         end
 
         vim.fn.mkdir(luapath:match("(.+)/.-%.lua"), "p")

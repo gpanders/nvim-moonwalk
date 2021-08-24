@@ -8,8 +8,8 @@ Neovim configuration.
 **init.lua**:
 
 ```lua
-require("moonwalk").add_loader("fnl", function(src)
-    return require("fennel").compileString(src)
+require("moonwalk").add_loader("fnl", function(src, path)
+    return require("fennel").compileString(src, path)
 end)
 ```
 
@@ -57,9 +57,14 @@ require("moonwalk").add_loader("fnl", function(src)
 end)
 ```
 
-Once `add_loader` is called, any `*.fnl` files found under a `plugin` directory
-on the user's `'runtimepath'` are sourced. You can also `require()` files found
-under any `fnl` directories on your `'runtimepath'`.
+The provided function can also take an optional second parameter `path` with
+the full path of the file being compiled.
+
+Once `add_loader` is called, any files with the extension provided found under
+a `plugin` directory on the user's `'runtimepath'` are sourced. You can also
+`require()` files found under any `{ext}` directories on your `'runtimepath'`,
+where `{ext}` is the first argument to `add_loader` (i.e. `fnl` in the example
+above).
 
 This also works with `plugin` and `ftplugin` files. For example, you can
 configure how Neovim works with C files by creating
@@ -70,7 +75,7 @@ configure how Neovim works with C files by creating
 (set vim.bo.shiftwidth 8)
 ```
 
-The examples above use Fennel, but o long as you can define a function that
+The examples above use Fennel, but so long as you can define a function that
 transforms the source into Lua, you can use any source language you want,
 including custom DSLs!
 
