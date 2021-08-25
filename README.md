@@ -38,13 +38,12 @@ source files into Lua. The compilation is cached and will not be repeated
 unless the source file changes.
 
 This means that the cost of compilation is only paid once: future invocations
-will used the already compiled Lua function and will execute as fast as native
-Lua.
+will execute as fast as native Lua.
 
 moonwalk intercepts `:source` and `:runtime` commands for files with the
 extensions you provide. This allows you to use any language anywhere you can
-use a .vim or .lua file (with a couple of exceptions, see [caveats](#caveats))
-such as `plugin` or `ftplugin` files.
+use a `.vim` or `.lua` file natively (with a couple of exceptions, see
+[caveats](#caveats)) such as `plugin`, `ftplugin`, or `indent` files.
 
 ## Configuration
 
@@ -63,8 +62,10 @@ the full path of the file being compiled.
 Once `add_loader` is called, any files with the extension provided found under
 a `plugin` directory on the user's `'runtimepath'` are sourced. You can also
 `require()` files found under any `{ext}` directories on your `'runtimepath'`,
-where `{ext}` is the first argument to `add_loader` (i.e. `fnl` in the example
-above).
+where `{ext}` is the first argument to `add_loader`. For example, if you add a
+loader for Teal with `add_loader("tl", function(src) ... end)` you can
+`require()` any `*.tl` files within a `tl` directory on your `'runtimepath'`
+(just as you can `require()` `*.lua` files within a `lua` directory).
 
 This also works with `plugin` and `ftplugin` files. For example, you can
 configure how Neovim works with C files by creating
@@ -113,7 +114,9 @@ the following keys:
 
 ## Examples
 
-See some examples from the author's dotfiles:
+The examples below are all written in Fennel. If you've used moonwalk in a
+language other than Fennel and you'd like to share your own examples, please
+let me know and I will add them here.
 
 * [Moonwalk configuration][config]
 * [Useful macros][macros]
