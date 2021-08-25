@@ -8,8 +8,8 @@ Neovim configuration.
 **init.lua**:
 
 ```lua
-require("moonwalk").add_loader("fnl", function(src, path)
-    return require("fennel").compileString(src, path)
+require("moonwalk").add_loader("fnl", function(src)
+    return require("fennel").compileString(src)
 end)
 ```
 
@@ -52,8 +52,8 @@ The only requirement is a function that can transform a string of the source
 language code into Lua. For example, with Fennel:
 
 ```lua
-require("moonwalk").add_loader("fnl", function(src)
-    return require("fennel").compileString(src)
+require("moonwalk").add_loader("fnl", function(src, path)
+    return require("fennel").compileString(src, { filename = path })
 end)
 ```
 
