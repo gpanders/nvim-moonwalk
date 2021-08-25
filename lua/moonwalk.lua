@@ -46,8 +46,9 @@ augroup END]],
     ))
 end
 
-local function compile(path, func)
+local function compile(path)
     local ext = path:match("[^/.]%.(.-)$")
+    local func = loaders[ext].func
     local luapath = cachedir .. "/moonwalk" .. path:gsub("%." .. ext .. "$", ".lua")
     local s = vim.loop.fs_stat(luapath)
     if not s or s.mtime.sec < vim.loop.fs_stat(path).mtime.sec then
@@ -98,8 +99,7 @@ local function source(path)
         return
     end
 
-    local ext = extension(path)
-    local ok, result = pcall(compile, path, loaders[ext].func)
+    local ok, result = pcall(compile, path)
     if ok then
         vim.api.nvim_command("source " .. result)
     else
@@ -152,7 +152,7 @@ local function loader(name)
         local paths = { dir .. "/" .. basename .. "." .. ext, dir .. "/" .. basename .. "/init." .. ext }
         local found = get_user_runtime_file(table.concat(paths, " "), true, false)
         if #found > 0 then
-            local luapath = compile(found[1], loaders[ext].func)
+            local luapath = compile(found[1])
             local f, err = loadfile(luapath)
             return f or error(err)
         end
