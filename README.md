@@ -109,8 +109,8 @@ the following keys:
      here: [stub][], [colors][].
 
 [wiki]: https://github.com/gpanders/nvim-moonwalk/wiki
-[stub]: https://git.sr.ht/~gpanders/dotfiles/tree/6ba3d5e54b1b3ce4c6e74165bf51d8c832a1dd6d/item/.config/nvim/colors/base16-eighties.vim
-[colors]: https://git.sr.ht/~gpanders/dotfiles/tree/6ba3d5e54b1b3ce4c6e74165bf51d8c832a1dd6d/item/.config/nvim/fnl/colors/base16-eighties.fnl
+[stub]: https://github.com/gpanders/dotfiles/blob/6ba3d5e54b1b3ce4c6e74165bf51d8c832a1dd6d/.config/nvim/colors/base16-eighties.vim
+[colors]: https://github.com/gpanders/dotfiles/blob/6ba3d5e54b1b3ce4c6e74165bf51d8c832a1dd6d/.config/nvim/fnl/colors/base16-eighties.fnl
 
 ## Examples
 
@@ -122,18 +122,17 @@ let me know and I will add them here.
 * [Useful macros][macros]
 * Plugin configuration: [lspconfig][], [telescope][], [compe][], [nvim-lint][]
 * ftplugins: [C][c ftplugin], [Fennel][fennel ftplugin]
-* [Asynchronous grep wrapper][grep] (and [commands][])
+* [Asynchronous grep wrapper][grep]
 
-[config]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/moonwalk.lua
-[macros]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/fnl/macros.fnl
-[lspconfig]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/lspconfig.fnl
-[telescope]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/telescope.fnl
-[compe]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/compe.fnl
-[nvim-lint]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/lint.fnl
-[c ftplugin]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/after/ftplugin/c.fnl
-[fennel ftplugin]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/after/ftplugin/fennel.fnl
-[grep]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/fnl/grep.fnl
-[commands]: https://git.sr.ht/~gpanders/dotfiles/tree/master/item/.config/nvim/plugin/grep.vim
+[config]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/moonwalk.lua
+[macros]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/fnl/macros.fnl
+[lspconfig]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/lspconfig.fnl
+[telescope]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/telescope.fnl
+[compe]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/compe.fnl
+[nvim-lint]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/lint.fnl
+[c ftplugin]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/after/ftplugin/c.fnl
+[fennel ftplugin]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/after/ftplugin/fennel.fnl
+[grep]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/grep.fnl
 
 ## FAQ
 
