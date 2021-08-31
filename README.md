@@ -128,7 +128,7 @@ let me know and I will add them here.
 [macros]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/fnl/macros.fnl
 [lspconfig]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/lspconfig.fnl
 [telescope]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/telescope.fnl
-[compe]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/compe.fnl
+[compe]: https://github.com/gpanders/dotfiles/blob/ed855b48a008cbd5da2232877a0b0d56e11235c3/.config/nvim/plugin/compe.fnl
 [nvim-lint]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/lint.fnl
 [c ftplugin]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/after/ftplugin/c.fnl
 [fennel ftplugin]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/after/ftplugin/fennel.fnl
