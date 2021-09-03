@@ -27,10 +27,6 @@ local log = (function()
     end
 end)()
 
-local function extension(path)
-    return path:match("[^/.]%.(.-)$")
-end
-
 -- TODO: Rewrite this when autocommands are supported natively in Lua
 local function setup_autocmds(ext)
     vim.cmd(string.format(
@@ -72,24 +68,26 @@ local function compile(path)
     return luapath
 end
 
-local function get_user_runtime_file(name, after, all)
-    local t = { vim.fn.stdpath("config"), vim.fn.stdpath("data") .. "/site" }
-    if after then
-        for i = 1, #t do
-            table.insert(t, t[i] .. "/after")
+local function get_user_runtime_file(name, all, after, rtp)
+    if not rtp then
+        rtp = { vim.fn.stdpath("config"), vim.fn.stdpath("data") .. "/site" }
+        if after then
+            for i = 1, #rtp do
+                table.insert(rtp, rtp[i] .. "/after")
+            end
         end
     end
 
-    local rtp = vim.o.runtimepath
-    local pp = vim.o.packpath
+    local rtp_save = vim.o.runtimepath
+    local pp_save = vim.o.packpath
 
-    vim.o.runtimepath = table.concat(t, ",")
+    vim.o.runtimepath = table.concat(rtp, ",")
     vim.o.packpath = ""
 
     local found = vim.api.nvim_get_runtime_file(name, all)
 
-    vim.o.runtimepath = rtp
-    vim.o.packpath = pp
+    vim.o.runtimepath = rtp_save
+    vim.o.packpath = pp_save
 
     return found
 end
@@ -109,7 +107,7 @@ end
 
 local function load_after_plugins()
     for ext in pairs(loaders) do
-        local plugins = get_user_runtime_file(string.format("after/plugin/**/*.%s", ext), false, true)
+        local plugins = get_user_runtime_file(string.format("after/plugin/**/*.%s", ext), true, false)
         for _, v in pairs(plugins) do
             source(v)
         end
@@ -147,12 +145,10 @@ local function loader(name)
     local basename = name:gsub("%.", "/")
 
     for ext, v in pairs(loaders) do
-        local opts = v.opts or {}
-        local dir = opts.dir or ext
-        local paths = { dir .. "/" .. basename .. "." .. ext, dir .. "/" .. basename .. "/init." .. ext }
-        local found = get_user_runtime_file(table.concat(paths, " "), true, false)
-        if #found > 0 then
-            local luapath = compile(found[1])
+        local paths = { basename .. "." .. ext, basename .. "/init." .. ext }
+        local found = get_user_runtime_file(table.concat(paths, " "), true, false, v.rtp)[1]
+        if found then
+            local luapath = compile(found)
             local f, err = loadfile(luapath)
             return f or error(err)
         end
@@ -162,9 +158,11 @@ end
 table.insert(package.loaders, loader)
 
 function M.add_loader(ext, func, opts)
-    loaders[ext] = { func = func, opts = opts }
+    opts = opts or {}
+    local rtp = get_user_runtime_file((opts.dir or ext) .. "/", true, true)
+    loaders[ext] = { func = func, opts = opts, rtp = rtp }
     setup_autocmds(ext)
-    local plugins = get_user_runtime_file(string.format("plugin/**/*.%s", ext), vim.v.vim_did_enter == 1, true)
+    local plugins = get_user_runtime_file(string.format("plugin/**/*.%s", ext), true, vim.v.vim_did_enter == 1)
     for _, v in pairs(plugins) do
         source(v)
     end
