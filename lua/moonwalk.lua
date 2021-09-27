@@ -80,10 +80,12 @@ local function get_user_runtime_file(name, all, after, rtp)
 
     local found = {}
     for _, path in ipairs(rtp) do
-        for _, file in ipairs(vim.fn.glob(path .. "/" .. name, false, true)) do
-            table.insert(found, file)
-            if not all then
-                return found
+        for _, n in ipairs(vim.split(name, "%s+")) do
+            for _, file in ipairs(vim.fn.glob(path .. "/" .. n, false, true)) do
+                table.insert(found, file)
+                if not all then
+                    return found
+                end
             end
         end
     end
@@ -158,7 +160,7 @@ table.insert(package.loaders, loader)
 
 function M.add_loader(ext, func, opts)
     opts = opts or {}
-    local rtp = get_user_runtime_file((opts.dir or ext) .. "/", true, true)
+    local rtp = get_user_runtime_file((opts.dir or ext) .. "/", true, false)
     loaders[ext] = { func = func, opts = opts, rtp = rtp }
     setup_autocmds(ext)
     local plugins = get_user_runtime_file(string.format("plugin/**/*.%s", ext), true, vim.v.vim_did_enter == 1)
