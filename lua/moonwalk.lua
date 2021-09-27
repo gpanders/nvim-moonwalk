@@ -78,16 +78,15 @@ local function get_user_runtime_file(name, all, after, rtp)
         end
     end
 
-    local rtp_save = vim.o.runtimepath
-    local pp_save = vim.o.packpath
-
-    vim.o.runtimepath = table.concat(rtp, ",")
-    vim.o.packpath = ""
-
-    local found = vim.api.nvim_get_runtime_file(name, all)
-
-    vim.o.runtimepath = rtp_save
-    vim.o.packpath = pp_save
+    local found = {}
+    for _, path in ipairs(rtp) do
+        for _, file in ipairs(vim.fn.glob(path .. "/" .. name, false, true)) do
+            table.insert(found, file)
+            if not all then
+                return found
+            end
+        end
+    end
 
     return found
 end
