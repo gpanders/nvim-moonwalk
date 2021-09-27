@@ -78,15 +78,14 @@ local function get_user_runtime_file(name, all, after, rtp)
         end
     end
 
+    local path = table.concat(rtp, ",")
     local found = {}
-    for _, path in ipairs(rtp) do
-        for _, n in ipairs(vim.split(name, "%s+")) do
-            for _, file in ipairs(vim.fn.glob(path .. "/" .. n, false, true)) do
-                table.insert(found, file)
-                if not all then
-                    return found
-                end
+    for _, n in ipairs(vim.split(name, "%s+")) do
+        for _, file in ipairs(vim.fn.globpath(path, n, false, true)) do
+            if not all then
+                return {file}
             end
+            table.insert(found, file)
         end
     end
 
