@@ -80,7 +80,7 @@ local function get_user_runtime_file(name, all, after, rtp)
 
     local path = table.concat(rtp, ",")
     local found = {}
-    for _, n in ipairs(vim.split(name, "%s+")) do
+    for n in vim.gsplit(name, "%s+") do
         for _, file in ipairs(vim.fn.globpath(path, n, false, true)) do
             if not all then
                 return {file}
@@ -101,7 +101,7 @@ local function source(path)
     if ok then
         vim.api.nvim_command("source " .. result)
     else
-        vim.notify(result, vim.log.levels.ERROR)
+        vim.api.nvim_err_writeln(result)
     end
 end
 
