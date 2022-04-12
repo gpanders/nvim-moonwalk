@@ -112,28 +112,6 @@ the following keys:
 [stub]: https://github.com/gpanders/dotfiles/blob/6ba3d5e54b1b3ce4c6e74165bf51d8c832a1dd6d/.config/nvim/colors/base16-eighties.vim
 [colors]: https://github.com/gpanders/dotfiles/blob/6ba3d5e54b1b3ce4c6e74165bf51d8c832a1dd6d/.config/nvim/fnl/colors/base16-eighties.fnl
 
-## Examples
-
-The examples below are all written in Fennel. If you've used moonwalk in a
-language other than Fennel and you'd like to share your own examples, please
-let me know and I will add them here.
-
-* [Moonwalk configuration][config]
-* [Useful macros][macros]
-* Plugin configuration: [lspconfig][], [telescope][], [compe][], [nvim-lint][]
-* ftplugins: [C][c ftplugin], [Fennel][fennel ftplugin]
-* [Asynchronous grep wrapper][grep]
-
-[config]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/moonwalk.lua
-[macros]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/fnl/macros.fnl
-[lspconfig]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/lspconfig.fnl
-[telescope]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/telescope.fnl
-[compe]: https://github.com/gpanders/dotfiles/blob/ed855b48a008cbd5da2232877a0b0d56e11235c3/.config/nvim/plugin/compe.fnl
-[nvim-lint]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/lint.fnl
-[c ftplugin]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/after/ftplugin/c.fnl
-[fennel ftplugin]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/after/ftplugin/fennel.fnl
-[grep]: https://github.com/gpanders/dotfiles/blob/master/.config/nvim/plugin/grep.fnl
-
 ## FAQ
 
 ### Why is this useful?
